@@ -8,7 +8,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const flash=require('connect-flash')
 const errorController = require('./controllers/error');
 const User = require('./models/user');
-
+require('dotenv').config()
 const MONGODB_URI =
   'mongodb+srv://jeanpaulrustom:Jeanpaul1999rLUFFY79153043@jpcluster.lv3bz.mongodb.net/shop';
 const csrfProtection=csrf();
@@ -17,7 +17,7 @@ const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: 'sessions'
 });
-
+console.log(process.env.SENDGRID_API_KEY)
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 

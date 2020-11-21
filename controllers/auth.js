@@ -3,7 +3,7 @@ const bcrypt=require("bcryptjs");
 const crypto=require('crypto')
 const mongoose=require('mongoose')
 const sgMail = require('@sendgrid/mail')
-sgMail.setApiKey('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')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 exports.getLogin = (req, res, next) => {
   

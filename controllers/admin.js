@@ -1,7 +1,6 @@
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
-   
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
@@ -35,13 +34,12 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getEditProduct = (req, res, next) => {
-     
   const editMode = req.query.edit;
   if (!editMode) {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
-  Product.findById(prodId)
+  Product.find({_id:prodId,userId:req.session.user._id})
     .then(product => {
       if (!product) {
         return res.redirect('/');
@@ -64,7 +62,7 @@ exports.postEditProduct = (req, res, next) => {
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
 
-  Product.findById(prodId)
+  Product.find({_id:prodId,userId:req.session.user._id})
     .then(product => {
       product.title = updatedTitle;
       product.price = updatedPrice;
@@ -80,7 +78,7 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  Product.find({userId:req.session.user._id})
     // .select('title price -_id')
     // .populate('userId', 'name')
     .then(products => {
