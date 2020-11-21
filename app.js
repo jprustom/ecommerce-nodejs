@@ -17,7 +17,7 @@ const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: 'sessions'
 });
-console.log(process.env.SENDGRID_API_KEY)
+
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
