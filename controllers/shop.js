@@ -1,5 +1,7 @@
-const Product = require('../models/product');
+const {PRODUCTS_NUMBER_PER_PAGE,Product}=require('../models/product.js');
 const Order = require('../models/order');
+const path=require('path')
+const fs=require('fs');
 
 exports.getProducts = (req, res, next) => {
   Product.find()
@@ -13,7 +15,7 @@ exports.getProducts = (req, res, next) => {
       });
     })
     .catch(err => {
-      console.log(err);
+      res.redirect('/500');
     });
 };
 
@@ -28,22 +30,28 @@ exports.getProduct = (req, res, next) => {
         isAuthenticated: req.session.isLoggedIn
       });
     })
-    .catch(err => console.log(err));
+    .catch(err =>{res.redirect('/500');});
 };
 
-exports.getIndex = (req, res, next) => {
-  Product.find()
-    .then(products => {
+
+exports.getIndex =async (req, res, next) => {
+  try{
+      const currentPageNumber=+req.query.page || 1;
+      const paginationConfig=await Product.generatePaginationConfig(currentPageNumber);
+      const productsToDisplay=await Product.getAtPageNumber(currentPageNumber);
+
       res.render('shop/index', {
-        prods: products,
+        prods: productsToDisplay,
         pageTitle: 'Shop',
         path: '/',
-        isAuthenticated: req.session.isLoggedIn
-      });
-    })
-    .catch(err => {
-      console.log(err);
-    });
+        isAuthenticated: req.session.isLoggedIn,
+        ...paginationConfig
+      })
+    }
+  catch(err){
+    console.log(err)
+    res.redirect('/500');
+  }
 };
 
 exports.getCart = (req, res, next) => {
@@ -71,6 +79,9 @@ exports.postCart = (req, res, next) => {
     .then(result => {
       console.log(result);
       res.redirect('/cart');
+    })
+    .catch(err=>{
+      res.redirect('/500');
     });
 };
 
@@ -100,7 +111,7 @@ exports.postOrder = (req, res, next) => {
         },
         products: products
       });
-      return order.save();
+      return order.save()
     })
     .then(result => {
       return req.user.clearCart();
@@ -108,7 +119,7 @@ exports.postOrder = (req, res, next) => {
     .then(() => {
       res.redirect('/orders');
     })
-    .catch(err => console.log(err));
+    .catch(err => {res.redirect('/500');});
 };
 
 exports.getOrders = (req, res, next) => {
@@ -121,5 +132,16 @@ exports.getOrders = (req, res, next) => {
         isAuthenticated: req.session.isLoggedIn
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {res.redirect('/500');});
 };
+exports.getInvoice=function(req,res,next){
+  const orderId=req.params.orderId;
+  const orderPath=path.join('invoices',`invoice-${orderId}.pdf`);
+  fs.readFile(orderPath,function(err,data){
+    if (err)
+      next(err);
+    res.setHeader('Content-Type','application/pdf');
+    res.send(data)
+  })
+
+}

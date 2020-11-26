@@ -231,7 +231,28 @@ form {
   background: red;
   color: white;
 }
-
+section#pagination{
+  text-align:center;
+  margin-top:1rem;
+}
+section#pagination>a{
+  text-decoration: none;
+  margin: 0rem .8rem;
+  border: 1px solid green;
+  border-radius: 25%;
+  padding: .4rem;
+  font-size: 1rem;
+}
+section#pagination>a.activePage{
+  background-color:#c5fff8
+}
+section#pagination>a:hover{
+  text-decoration: underline;
+  font-weight: bold;
+  color:green;
+  font-size:1.3rem;
+  background-color: #c5fff8;
+}
 @media (min-width: 768px) {
   .main-header__nav {
     display: flex;

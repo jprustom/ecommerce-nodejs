@@ -33,5 +33,23 @@
         <% } else { %>
             <h1>No Products Found!</h1>
         <% } %>
+        <section id="pagination">
+            <% if (currentPageNumber!==1) { %>
+                <a href="/">1</a>
+            <% } %>
+            <% if (previousPageNumber && previousPageNumber!=1) { %>
+                <a href="?page=<%= previousPageNumber %>"><%= previousPageNumber %></a>
+            <% } %>
+            <a href="?page=<%= currentPageNumber %>" class="activePage"><%= currentPageNumber %></a>
+            <% if (nextPageNumber) { %>
+                <a href="?page=<%= nextPageNumber %>"><%= nextPageNumber %></a>
+            <% } %>
+            <% if (lastPageNumber!=currentPageNumber && lastPageNumber!=nextPageNumber) { %>
+                <% if (lastPageNumber!=nextPageNumber+1) { %>
+                    <span>....</span>
+                <% } %>
+                <a href="?page=<%= lastPageNumber %>"><%= lastPageNumber %></a>
+            <% } %>
+        </section>
     </main>
 <%- include('../includes/end.ejs') %>

@@ -4,17 +4,17 @@
 </head>
 
 <body>
-   <%- include('../includes/navigation.ejs') %>
+    <%- include('../includes/navigation.ejs') %>
 
     <main>
         <% if (errorMessage) { %>
             <div><%=errorMessage%></div>
             <% } %>
-        <form class="login-form" action="/signup" method="POST" novalidate>
+        <form class="login-form" action="/signup" method="POST">
             <input type='hidden' name='_csrf' value='<%=csrfToken%>'/>
             <div class="form-control">
                 <label for="email">E-Mail</label>
-                <input type="email" name="email" id="email">
+                <input type="email" name="email" id="email" value="<%=previousEmailInput%>">
             </div>
             <div class="form-control">
                 <label for="password">Password</label>

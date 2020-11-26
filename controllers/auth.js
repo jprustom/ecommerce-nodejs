@@ -23,7 +23,8 @@ exports.getSignup = (req, res, next) => {
     path: '/signup',
     pageTitle: 'Signup',
     isAuthenticated: false,
-    errorMessage:req.flash('error')
+    errorMessage:req.flash('error'),
+    previousEmailInput:''
   });
 };
 
@@ -59,10 +60,12 @@ exports.postLogin = (req, res, next) => {
         })
       
     })
-    .catch(err => console.log(err));
+    .catch(err => {res.redirect('/500');});
 };
 
 exports.postSignup = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
   const validationErrors=validationResult(req)
   if (!validationErrors.isEmpty()){
     console.log(validationErrors.array())
@@ -70,11 +73,10 @@ exports.postSignup = (req, res, next) => {
       path:'signup',
       pageTitle:'Sign Up',
       errorMessage:validationErrors.array()[0].msg,
-      isAuthenticated:false
+      isAuthenticated:false,
+      previousEmailInput:email
     })
   }
-  const email = req.body.email;
-  const password = req.body.password;
   return bcrypt.hash(password,12)
     .then(hashedPassword=>{
         const user = new User({
@@ -119,8 +121,7 @@ exports.getResetPassReq=function(req,res,next){
 }
 exports.postResetPassReq=async function(req,res,next){
   const email=req.body['email'];
-  console.log(email)
-  const user=await User.findOne({email}).catch((err)=>{console.log(err.message)})
+  const user=await User.findOne({email}).catch((err)=>{return res.redirect('/500');})
   if (!user){
     req.flash('error',`${email} does not exist in our database`)
     return res.redirect('/reset-password')
@@ -132,7 +133,6 @@ exports.postResetPassReq=async function(req,res,next){
     }
     res.redirect('/')
     const tokenGenerated=buffer.toString('hex')
-    console.log(tokenGenerated)
     user.resetPasswordToken=tokenGenerated;
     user.resetPasswordTokenExpiryDate=Date.now()+24*60*60*1000;
     user.save();
@@ -152,7 +152,7 @@ exports.postResetPassReq=async function(req,res,next){
 exports.getNewPassword=async function(req,res,next){
   const resetPasswordToken=req.params.token;
   console.log('token is',req.params.token)
-  const user=await User.findOne({resetPasswordToken,resetPasswordTokenExpiryDate:{"$gt":Date.now()}}).catch((err)=>{console.log(err)});
+  const user=await User.findOne({resetPasswordToken,resetPasswordTokenExpiryDate:{"$gt":Date.now()}}).catch((err)=>{res.redirect('/500');});
   console.log('id string',user._id.toString())
   res.render('auth/resetPassword',{
     pageTitle:'Reset Password',
@@ -168,7 +168,7 @@ exports.postNewPassword=async function(req,res,next){
     _id:mongoose.Types.ObjectId(req.body['user_id']),
     resetPasswordToken:req.body['resetPasswordToken'],
     resetPasswordTokenExpiryDate:{"$gt":Date.now()}
-  }).catch((err)=>{console.log(err.message)})
+  }).catch((err)=>{res.redirect('/500');})
   if (!user){
     req.flash('error','reset password request expired');
     if (user){

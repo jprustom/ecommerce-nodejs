@@ -13,6 +13,7 @@ const MONGODB_URI =
   'mongodb+srv://jeanpaulrustom:Jeanpaul1999rLUFFY79153043@jpcluster.lv3bz.mongodb.net/shop';
 const csrfProtection=csrf();
 const app = express();
+const multer=require('multer')
 const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: 'sessions'
@@ -26,6 +27,17 @@ const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+const multerStorage=multer.diskStorage({
+  destination:(req,file,cb)=>{cb(null,path.join('public','images'))},
+  filename:(req,file,cb)=>{cb(null,Date.now()+'_'+file['originalname'])}
+})
+const fileFilter=(req,file,cb)=>{
+  if (!file.mimetype.includes('image'))
+    return cb(null,false)
+  cb(null,true)
+}
+app.use(multer({storage:multerStorage,fileFilter}).single('imageUrl'))
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
@@ -43,11 +55,10 @@ app.use((req, res, next) => {
   }
   User.findById(req.session.user._id)
     .then(user => {
-      console.log(user)
       req.user = user;
       next();
     })
-    .catch(err => console.log(err));
+    .catch(err => {throw new Error(err)});
 });
 app.use((req,res,next)=>{
   res.locals.csrfToken=req.csrfToken();
@@ -58,10 +69,10 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.get('/500',errorController.get500)
 app.use(errorController.get404);
-
 mongoose
-  .connect(MONGODB_URI,{useNewUrlParser: true ,useUnifiedTopology:true})
+  .connect(MONGODB_URI,{useNewUrlParser: true ,useUnifiedTopology:true,useFindAndModify:false})
   .then(result => {
     console.log('listening on port 3000')
     app.listen(3000);
